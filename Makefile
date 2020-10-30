@@ -33,6 +33,7 @@ plugins: libs
 	$(MAKE) all -C plugins/MIDIPBToCC
 	$(MAKE) all -C plugins/MIDIPressureToCC
 	$(MAKE) all -C plugins/MIDISysFilter
+	$(MAKE) all -C plugins/LaunchpadControl
 
 ifneq ($(CROSS_COMPILING),true)
 gen: plugins dpf/utils/lv2_ttl_generator
@@ -60,6 +61,7 @@ clean:
 	$(MAKE) clean -C plugins/MIDIPBToCC
 	$(MAKE) clean -C plugins/MIDIPressureToCC
 	$(MAKE) clean -C plugins/MIDISysFilter
+	$(MAKE) clean -C plugins/LaunchpadControl
 	rm -rf bin build
 
 install: all
@@ -69,6 +71,7 @@ install: all
 	$(MAKE) install -C plugins/MIDIPBToCC
 	$(MAKE) install -C plugins/MIDIPressureToCC
 	$(MAKE) install -C plugins/MIDISysFilter
+	$(MAKE) install -C plugins/LaunchpadControl
 
 install-user: all
 	$(MAKE) install-user -C plugins/MIDICCMapX4
@@ -77,6 +80,7 @@ install-user: all
 	$(MAKE) install-user -C plugins/MIDIPBToCC
 	$(MAKE) install-user -C plugins/MIDIPressureToCC
 	$(MAKE) install-user -C plugins/MIDISysFilter
+	$(MAKE) install-user -C plugins/LaunchpadControl
 
 # --------------------------------------------------------------
 

@@ -1,0 +1,30 @@
+  void
+  send_light_notes(int cur_step)
+  {
+    int prev_step = get_prev_step(cur_step);
+
+    //std::cout << "prev - cur " << prev_step << " - " << cur_step << std::endl;
+    struct MidiEvent lightOffEvent;
+    lightOffEvent.size = 3;
+    lightOffEvent.data[0] = CHAN_2_NOTE_ON; //CHAN_2_NOTE_ON
+    lightOffEvent.data[1] = 80 + prev_step;
+    lightOffEvent.data[2] = 0;        // Turn off
+    if (pad_state[8][prev_step] == 1) // hay una nota en ese paso
+    {
+      //lightOffEvent.data[0] = CHAN_1_NOTE_ON; //CHAN_1_NOTE_ON
+      //lightOffEvent.data[2] = COLOR_PAD_ON;   // Turn on color on
+    }
+    else
+    {
+      // lightOffEvent.data[0] = CHAN_2_NOTE_ON; //CHAN_2_NOTE_ON
+      //lightOffEvent.data[2] = 0;              // Turn off
+    }
+    writeMidiEvent(lightOffEvent);
+
+    struct MidiEvent lightOnEvent;
+    lightOnEvent.size = 3;
+    lightOnEvent.data[0] = CHAN_2_NOTE_ON; //CHAN_2_NOTE_ON
+    lightOnEvent.data[1] = 80 + cur_step;
+    lightOnEvent.data[2] = COLOR_SEQ_ON; // color seq (ON event)
+    writeMidiEvent(lightOnEvent);
+  }
