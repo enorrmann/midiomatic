@@ -16,12 +16,14 @@ public:
         KEY_UP_PRESSED,
         KEY_DOWN_PRESSED,
         KEY_LEFT_PRESSED,
+        KEY_RIGHT_PRESSED,
         OTHER
     };
     MidiEvent GetSessionModeOnSysex();
     MidiEvent GetTestNote();
     MidiEvent GetNoteOn(int channel, int note);
     MidiEvent GetNoteOff(int channel, int note);
+    MidiEvent GetAllNoteOff(int channel);
     MessageType GetMessageType(MidiEvent *midiEvent);
     void debug_midi_event(MidiEvent *midiEvent);
     MidiEvent GetPadOnNote(int x, int y, int color);

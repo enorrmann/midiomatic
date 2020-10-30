@@ -126,40 +126,40 @@ protected:
 
     int prev_step = get_prev_step(step);
 
-    // for each clip
-    for (int c = 0; c <= 1; c++)
+    // for each clip in the clip matrix
+    for (int x = 1; x <= 8; x++)
     {
-      Clip *theClip = &clips[c];
-      int channel = clip_channel[c];
-      int drum_clip = is_drum_clip[c];
-
-      //Clip *theClip = selectedClip;
-      //Clip *theClip = &clips[0];
-
-      // for each row in the clip
-      for (int i = 1; i <= 8; i++)
+      for (int y = 1; y <= 8; y++)
       {
+        Clip *theClip = &clip_matrix[x][y];
+        int channel = clip_channel[y];
+        int drum_clip = is_drum_clip[y];
 
-        int cur_state = theClip->GetState(i, step);
-        int prev_state = theClip->GetState(i, prev_step);
-
-        // if the state of this step is ON
-        if (cur_state == 1)
+        // for each row in the clip
+        for (int i = 1; i <= 8; i++)
         {
-          // and the note was off // or this is a drum track, ie. ifnore note off
-          if (prev_state == 0 || drum_clip == 1)
+
+          int cur_state = theClip->GetState(i, step);
+          int prev_state = theClip->GetState(i, prev_step);
+
+          // if the state of this step is ON
+          if (cur_state == 1)
           {
-            // send a note on event
-            writeMidiEvent(launchPad.GetNoteOn(channel, seq_notes[i]));
+            // and the note was off // or this is a drum track, ie. ifnore note off
+            if (prev_state == 0 || drum_clip == 1)
+            {
+              // send a note on event
+              writeMidiEvent(launchPad.GetNoteOn(channel, seq_notes[i]));
+            }
           }
-        }
-        else
-        {
-          // the state of this step is OFF, check the state of the previous step to see if
-          // and the note was ON, and stop it
-          if (prev_state == 1)
+          else
           {
-            writeMidiEvent(launchPad.GetNoteOff(channel, seq_notes[i]));
+            // the state of this step is OFF, check the state of the previous step to see if
+            // and the note was ON, and stop it
+            if (prev_state == 1)
+            {
+              writeMidiEvent(launchPad.GetNoteOff(channel, seq_notes[i]));
+            }
           }
         }
       }
@@ -193,22 +193,6 @@ protected:
         }
       }
     }
-  }
-
-  void select_clip(int clip)
-  {
-    std::cout << "selected clip" << clip << std::endl;
-    switch (clip)
-    {
-    case 1:
-      selectedClip = &clips[0];
-      break;
-
-    default:
-      selectedClip = &clips[1];
-      break;
-    }
-    light_selected_clip();
   }
 
   void process_audio(uint32_t nframes)
@@ -284,6 +268,12 @@ protected:
         std::cout << "key left" << std ::endl;
         clear_selected_clip();
       }
+      if (messageType == LaunchpadMiniMk3::KEY_RIGHT_PRESSED)
+      {
+        std::cout << "key right" << std ::endl;
+        // todo, assign channel to clip
+        //writeMidiEvent(launchPad.GetAllNoteOff());
+      }
       if (messageType == LaunchpadMiniMk3::SESSION_MODE_SELECTED)
       {
         // send sysex to signal session mode available
@@ -349,11 +339,10 @@ private:
   double sr = getSampleRate();
   double bpm;
   uint32_t wave_length;
-  Clip clips[2];
   Clip clip_matrix[9][9]{};
-  int is_drum_clip[2] = {1, 0}; // clip 1 is a drum clip
-  int clip_channel[2] = {7, 8};
-  Clip *selectedClip = &clips[0];
+  int is_drum_clip[9] = {1, 1, 0, 0, 0, 0, 0, 0, 0}; // clip 1 is a drum clip
+  int clip_channel[9] = {0, 2, 3, 4, 5, 6, 7, 8, 9}; // pos 0 is not used
+  Clip *selectedClip = &clip_matrix[1][1];
   Util util;
   const int N_STEPS = 8;
   int cur_step = 1;

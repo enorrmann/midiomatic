@@ -2,6 +2,8 @@
 #include "DistrhoPlugin.hpp"
 #include <iostream>
 
+
+// see https://www.midimountain.com/midi/midi_status.htm
 MidiEvent LaunchpadMiniMk3::GetSessionModeOnSysex()
 {
     // 240 0 32 41 2 13 16 <mode> 247
@@ -69,6 +71,16 @@ MidiEvent LaunchpadMiniMk3::GetNoteOff(int channel, int note)
     return noteOnEvent;
 }
 
+MidiEvent LaunchpadMiniMk3::GetAllNoteOff(int channel)
+{
+    struct MidiEvent noteOnEvent;
+    noteOnEvent.size = 3;
+    noteOnEvent.data[0] = 175 + channel; //176 is control mode, channel 1
+    noteOnEvent.data[1] = 123; // 123 is all notes off
+    noteOnEvent.data[2] = 0; // velo/volume
+    return noteOnEvent;
+}
+
 MidiEvent LaunchpadMiniMk3::GetPadOnNote(int x, int y, int color)
 {
     struct MidiEvent noteOnEvent;
@@ -104,6 +116,10 @@ LaunchpadMiniMk3::MessageType LaunchpadMiniMk3::GetMessageType(MidiEvent *midiEv
     {
         return KEY_LEFT_PRESSED;
     }
+    else if (midiEvent->data[0] == 176 && midiEvent->data[1] == 94 && midiEvent->data[2] == 127)
+    {
+        return KEY_RIGHT_PRESSED;
+    }
     else if (midiEvent->data[0] == 176 && midiEvent->data[1] == 95 && midiEvent->data[2] == 127)
     {
         return SESSION_MODE_SELECTED;
@@ -117,4 +133,3 @@ LaunchpadMiniMk3::MessageType LaunchpadMiniMk3::GetMessageType(MidiEvent *midiEv
         return OTHER;
     }
 }
-
