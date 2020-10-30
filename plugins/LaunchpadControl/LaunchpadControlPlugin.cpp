@@ -125,7 +125,6 @@ protected:
   {
 
     int prev_step = get_prev_step(step);
-    bool drumMode = true; // always trigger note after a previous note on
 
     // for each clip
     for (int c = 0; c <= 1; c++)
@@ -181,6 +180,9 @@ protected:
 
   void light_selected_clip()
   {
+    // turn off all pad lights
+    writeMidiEvent(launchPad.GetSessionClearSysex());
+
     for (int i = 1; i <= 8; i++)
     {
       for (int j = 1; j <= 8; j++)
@@ -195,7 +197,6 @@ protected:
 
   void select_clip(int clip)
   {
-    writeMidiEvent(launchPad.GetSessionClearSysex());
     std::cout << "selected clip" << clip << std::endl;
     switch (clip)
     {
@@ -269,12 +270,14 @@ protected:
       if (messageType == LaunchpadMiniMk3::KEY_UP_PRESSED)
       {
         std::cout << "keyup" << std ::endl;
-        select_clip(1);
+        mode = PlayClip;
+        //select_clip(1);
       }
       if (messageType == LaunchpadMiniMk3::KEY_DOWN_PRESSED)
       {
         std::cout << "key down" << std ::endl;
-        select_clip(2);
+        mode = Sequence;
+        //select_clip(2);
       }
       if (messageType == LaunchpadMiniMk3::KEY_LEFT_PRESSED)
       {
@@ -289,25 +292,37 @@ protected:
 
       if (messageType == LaunchpadMiniMk3::SESSION_PAD_PRESSED)
       {
-
         // note 12 signals pad press on x1, y2
         int note = midiEvent.data[1];
         int x, y;
         x = note / 10 % 10;
         y = note % 10;
 
-        if (selectedClip->GetState(x, y) == 0)
+        // in this mode we edit the clips
+        if (mode == Sequence)
         {
-          selectedClip->SetState(x, y, 1);  // turn ON
-          midiEvent.data[2] = COLOR_PAD_ON; // midi event velocity
+
+          if (selectedClip->GetState(x, y) == 0)
+          {
+            selectedClip->SetState(x, y, 1);  // turn ON
+            midiEvent.data[2] = COLOR_PAD_ON; // midi event velocity
+          }
+          else
+          {
+            selectedClip->SetState(x, y, 0);   // turn OFF
+            midiEvent.data[2] = COLOR_PAD_OFF; // midi event velocity
+          }
+
+          writeMidiEvent(midiEvent);
         }
+        // in this mode we select the clips
         else
         {
-          selectedClip->SetState(x, y, 0);   // turn OFF
-          midiEvent.data[2] = COLOR_PAD_OFF; // midi event velocity
+          util.debug_midi_event(&midiEvent);
+          selectedClip = &clip_matrix[x][y];
+          light_selected_clip();
+          mode = Sequence;
         }
-
-        writeMidiEvent(midiEvent);
       }
     }
 
@@ -323,12 +338,19 @@ protected:
   // -------------------------------------------------------------------------------------------------------
 
 private:
+  enum Mode
+  {
+    PlayClip,
+    Sequence
+  };
+
   long offset = 0;
   uint32_t tone_length = 0;
   double sr = getSampleRate();
   double bpm;
   uint32_t wave_length;
   Clip clips[2];
+  Clip clip_matrix[9][9]{};
   int is_drum_clip[2] = {1, 0}; // clip 1 is a drum clip
   int clip_channel[2] = {7, 8};
   Clip *selectedClip = &clips[0];
@@ -342,6 +364,8 @@ private:
   int CHAN_1_NOTE_ON = 144;
   int CHAN_2_NOTE_ON = 145;
   int CHAN_7_NOTE_ON = 150;
+  Mode mode = PlayClip;
+
   LaunchpadMiniMk3 launchPad;
 
   /**

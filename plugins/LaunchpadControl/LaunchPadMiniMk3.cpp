@@ -118,18 +118,3 @@ LaunchpadMiniMk3::MessageType LaunchpadMiniMk3::GetMessageType(MidiEvent *midiEv
     }
 }
 
-void LaunchpadMiniMk3::debug_midi_event(MidiEvent *midiEvent)
-{
-    /*std::cout << "midiEvent.data[0]" << (int)midiEvent->data[0] << std::endl;
-    std::cout << "midiEvent.data[1]" << (int)midiEvent->data[1] << std::endl;
-    std::cout << "midiEvent.data[2]" << (int)midiEvent->data[2] << std::endl;*/
-
-    std::cout << "sizeof(midiEvent)" << sizeof(midiEvent) << std::endl;
-    std::cout << "midiEvent.size" << (int)midiEvent->size << std::endl;
-    std::cout << "midiEvent.dataExt[0]" << (int)midiEvent->dataExt[0] << std::endl;
-    std::cout << "midiEvent.dataExt[1]" << (int)midiEvent->dataExt[1] << std::endl;
-    std::cout << "midiEvent.dataExt[2]" << (int)midiEvent->dataExt[2] << std::endl;
-
-    std::cout << "midiEvent.dataExt[7]" << (int)midiEvent->dataExt[7] << std::endl;
-    std::cout << "midiEvent.dataExt[8]" << (int)midiEvent->dataExt[8] << std::endl;
-}
