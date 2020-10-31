@@ -2,7 +2,6 @@
 #include "DistrhoPlugin.hpp"
 #include <iostream>
 
-
 // see https://www.midimountain.com/midi/midi_status.htm
 MidiEvent LaunchpadMiniMk3::GetSessionModeOnSysex()
 {
@@ -76,8 +75,8 @@ MidiEvent LaunchpadMiniMk3::GetAllNoteOff(int channel)
     struct MidiEvent noteOnEvent;
     noteOnEvent.size = 3;
     noteOnEvent.data[0] = 175 + channel; //176 is control mode, channel 1
-    noteOnEvent.data[1] = 123; // 123 is all notes off
-    noteOnEvent.data[2] = 0; // velo/volume
+    noteOnEvent.data[1] = 123;           // 123 is all notes off
+    noteOnEvent.data[2] = 0;             // velo/volume
     return noteOnEvent;
 }
 
@@ -86,6 +85,16 @@ MidiEvent LaunchpadMiniMk3::GetPadOnNote(int x, int y, int color)
     struct MidiEvent noteOnEvent;
     noteOnEvent.size = 3;
     noteOnEvent.data[0] = 144;        //144 is note on, channel 1
+    noteOnEvent.data[1] = x * 10 + y; // note 12 signals pad press on x1, y2
+    noteOnEvent.data[2] = color;      // velo/volume
+    return noteOnEvent;
+}
+
+MidiEvent LaunchpadMiniMk3::GetControlPadOnNote(int x, int y, int color)
+{
+    struct MidiEvent noteOnEvent;
+    noteOnEvent.size = 3;
+    noteOnEvent.data[0] = 176;        //176 for "special" pads, outside the main 8x8
     noteOnEvent.data[1] = x * 10 + y; // note 12 signals pad press on x1, y2
     noteOnEvent.data[2] = color;      // velo/volume
     return noteOnEvent;
@@ -104,27 +113,37 @@ MidiEvent LaunchpadMiniMk3::GetTestNote()
 
 LaunchpadMiniMk3::MessageType LaunchpadMiniMk3::GetMessageType(MidiEvent *midiEvent)
 {
-    if (midiEvent->data[0] == 176 && midiEvent->data[1] == 91 && midiEvent->data[2] == 127)
+    // this is a controller key (black pads outside the 8x8 grid)
+    // key pressed is vol 127, releases is vol 0
+    // so, this means "if a controller pad has been pressed"
+    if (midiEvent->data[0] == 176 && midiEvent->data[2] == 127)
     {
-        return KEY_UP_PRESSED;
+        if (midiEvent->data[1] == 91)
+        {
+            return KEY_UP_PRESSED;
+        }
+        else if (midiEvent->data[1] == 92)
+        {
+            return KEY_DOWN_PRESSED;
+        }
+        else if (midiEvent->data[1] == 93)
+        {
+            return KEY_LEFT_PRESSED;
+        }
+        else if (midiEvent->data[1] == 94)
+        {
+            return KEY_RIGHT_PRESSED;
+        }
+        else if (midiEvent->data[1] == 95)
+        {
+            return SESSION_MODE_PRESSED;
+        }
+        else if (midiEvent->data[1] == 19)
+        {
+            return STOP_SOLO_MUTE_TOGGLE_PRESSED;
+        }
     }
-    else if (midiEvent->data[0] == 176 && midiEvent->data[1] == 92 && midiEvent->data[2] == 127)
-    {
-        return KEY_DOWN_PRESSED;
-    }
-    else if (midiEvent->data[0] == 176 && midiEvent->data[1] == 93 && midiEvent->data[2] == 127)
-    {
-        return KEY_LEFT_PRESSED;
-    }
-    else if (midiEvent->data[0] == 176 && midiEvent->data[1] == 94 && midiEvent->data[2] == 127)
-    {
-        return KEY_RIGHT_PRESSED;
-    }
-    else if (midiEvent->data[0] == 176 && midiEvent->data[1] == 95 && midiEvent->data[2] == 127)
-    {
-        return SESSION_MODE_SELECTED;
-    }
-    else if (midiEvent->data[0] == 144 && midiEvent->data[2] > 0)
+    else if (midiEvent->data[0] == 144 && midiEvent->data[2] == 127)
     { // note ON channel 1 velo > 0
         return SESSION_PAD_PRESSED;
     }

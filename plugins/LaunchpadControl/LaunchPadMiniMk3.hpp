@@ -11,12 +11,13 @@ private:
 public:
     enum MessageType
     {
-        SESSION_MODE_SELECTED,
+        SESSION_MODE_PRESSED,
         SESSION_PAD_PRESSED,
         KEY_UP_PRESSED,
         KEY_DOWN_PRESSED,
         KEY_LEFT_PRESSED,
         KEY_RIGHT_PRESSED,
+        STOP_SOLO_MUTE_TOGGLE_PRESSED,
         OTHER
     };
     MidiEvent GetSessionModeOnSysex();
@@ -27,6 +28,7 @@ public:
     MessageType GetMessageType(MidiEvent *midiEvent);
     void debug_midi_event(MidiEvent *midiEvent);
     MidiEvent GetPadOnNote(int x, int y, int color);
+    MidiEvent GetControlPadOnNote(int x, int y, int color);
     MidiEvent GetSessionClearSysex();
 };
 

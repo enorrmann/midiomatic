@@ -110,15 +110,10 @@ protected:
   /* --------------------------------------------------------------------------------------------------------
     * /MIDI Processing */
 
-  // calculate the previous step in the sequence
+  // calculate the previous step in the EditClip
   int get_prev_step(int cur_step)
   {
     return cur_step == 1 ? N_STEPS : cur_step - 1;
-  }
-
-  void send_test_note()
-  {
-    writeMidiEvent(launchPad.GetTestNote());
   }
 
   void send_midi_notes(int step)
@@ -165,7 +160,25 @@ protected:
       }
     }
   }
-
+  void cycleMode()
+  {
+    if (mode == SelectClip)
+    {
+      mode = EditClip;
+    }
+    else if (mode == PlayClip)
+    {
+      mode = SelectClip;
+      light_used_clips();
+    }
+    else
+    {
+      mode = PlayClip;
+      selectedClip = metaClip;
+      light_selected_clip();
+    }
+    writeMidiEvent(launchPad.GetControlPadOnNote(1, 9, mode_color[mode]));
+  }
   void clear_selected_clip()
   {
     writeMidiEvent(launchPad.GetSessionClearSysex());
@@ -190,7 +203,7 @@ protected:
 
         if (clip_matrix[i][j].HasNoteOn())
         {
-          writeMidiEvent(launchPad.GetPadOnNote(i, j, COLOR_SELECTED_PAD));
+          writeMidiEvent(launchPad.GetPadOnNote(i, j, mode_color[SelectClip]));
         }
       }
     }
@@ -206,7 +219,7 @@ protected:
       {
         if (selectedClip->GetState(i, j) == 1)
         {
-          writeMidiEvent(launchPad.GetPadOnNote(i, j, COLOR_PAD_ON));
+          writeMidiEvent(launchPad.GetPadOnNote(i, j, mode_color[mode]));
         }
         else
         {
@@ -272,6 +285,11 @@ protected:
 
       LaunchpadMiniMk3::MessageType messageType = launchPad.GetMessageType(&midiEvent);
 
+      if (messageType == LaunchpadMiniMk3::STOP_SOLO_MUTE_TOGGLE_PRESSED)
+      {
+        cycleMode();
+      }
+
       if (messageType == LaunchpadMiniMk3::KEY_UP_PRESSED)
       {
         selectedClip->Transpose(1);
@@ -283,17 +301,14 @@ protected:
       if (messageType == LaunchpadMiniMk3::KEY_LEFT_PRESSED)
       {
         //clear_selected_clip();
-        mode = PlayClip;
-        light_used_clips();
       }
       if (messageType == LaunchpadMiniMk3::KEY_RIGHT_PRESSED)
       {
-        mode = Sequence;
 
         // todo, assign channel to clip
         //writeMidiEvent(launchPad.GetAllNoteOff());
       }
-      if (messageType == LaunchpadMiniMk3::SESSION_MODE_SELECTED)
+      if (messageType == LaunchpadMiniMk3::SESSION_MODE_PRESSED)
       {
         // send sysex to signal session mode available
         writeMidiEvent(launchPad.GetSessionModeOnSysex());
@@ -308,13 +323,13 @@ protected:
         y = note % 10;
 
         // in this mode we edit the clips
-        if (mode == Sequence)
+        if (mode == EditClip || mode == PlayClip)
         {
 
           if (selectedClip->GetState(x, y) == 0)
           {
-            selectedClip->SetState(x, y, 1);  // turn ON
-            midiEvent.data[2] = COLOR_PAD_ON; // midi event velocity
+            selectedClip->SetState(x, y, 1);      // turn ON
+            midiEvent.data[2] = mode_color[mode]; // midi event velocity
           }
           else
           {
@@ -328,8 +343,8 @@ protected:
         {
           selectedClip = &clip_matrix[x][y];
           light_selected_clip();
-          writeMidiEvent(launchPad.GetPadOnNote(x, y, COLOR_SELECTED_PAD));
-          //mode = Sequence; // dont change mode if mode is not selected
+          writeMidiEvent(launchPad.GetPadOnNote(x, y, mode_color[SelectClip]));
+          //mode = EditClip; // dont change mode if mode is not selected
         }
       }
     }
@@ -348,8 +363,9 @@ protected:
 private:
   enum Mode
   {
-    PlayClip,
-    Sequence
+    SelectClip,
+    EditClip,
+    PlayClip
   };
 
   long offset = 0;
@@ -361,6 +377,8 @@ private:
   int is_drum_clip[9] = {1, 1, 0, 0, 0, 0, 0, 0, 0}; // clip 1 is a drum clip
   int clip_channel[9] = {0, 2, 3, 4, 5, 6, 7, 8, 9}; // pos 0 is not used
   Clip *selectedClip = &clip_matrix[1][1];
+  Clip *metaClip = &clip_matrix[0][0]; // this metaclip holds the state of all the other clips, ie, active, stopped, etc
+  int mode_color[3]{25, 67, 95};
   Util util;
   const int N_STEPS = 8;
   int cur_step = 1;
@@ -371,7 +389,7 @@ private:
   int CHAN_1_NOTE_ON = 144;
   int CHAN_2_NOTE_ON = 145;
   int CHAN_7_NOTE_ON = 150;
-  Mode mode = PlayClip;
+  Mode mode = SelectClip;
 
   LaunchpadMiniMk3 launchPad;
 
