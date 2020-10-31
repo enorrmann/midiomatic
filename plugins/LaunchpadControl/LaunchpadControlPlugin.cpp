@@ -127,6 +127,10 @@ protected:
       for (int y = 1; y <= 8; y++)
       {
         Clip *theClip = &clip_matrix[x][y];
+        if (theClip->GetState() == 0)
+        {
+          continue;
+        }
         int channel = clip_channel[y];
         int drum_clip = is_drum_clip[y];
 
