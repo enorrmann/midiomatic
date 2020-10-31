@@ -149,7 +149,7 @@ protected:
             if (prev_state == 0 || drum_clip == 1)
             {
               // send a note on event
-              writeMidiEvent(launchPad.GetNoteOn(channel, seq_notes[i]));
+              writeMidiEvent(launchPad.GetNoteOn(channel, theClip->GetSeqNote(i)));
             }
           }
           else
@@ -158,7 +158,7 @@ protected:
             // and the note was ON, and stop it
             if (prev_state == 1)
             {
-              writeMidiEvent(launchPad.GetNoteOff(channel, seq_notes[i]));
+              writeMidiEvent(launchPad.GetNoteOff(channel, theClip->GetSeqNote(i)));
             }
           }
         }
@@ -178,6 +178,23 @@ protected:
     }
   }
 
+  void light_used_clips()
+  {
+    // turn off all pad lights
+    writeMidiEvent(launchPad.GetSessionClearSysex());
+
+    for (int i = 1; i <= 8; i++)
+    {
+      for (int j = 1; j <= 8; j++)
+      {
+
+        if (clip_matrix[i][j].HasNoteOn())
+        {
+          writeMidiEvent(launchPad.GetPadOnNote(i, j, COLOR_SELECTED_PAD));
+        }
+      }
+    }
+  }
   void light_selected_clip()
   {
     // turn off all pad lights
@@ -190,6 +207,10 @@ protected:
         if (selectedClip->GetState(i, j) == 1)
         {
           writeMidiEvent(launchPad.GetPadOnNote(i, j, COLOR_PAD_ON));
+        }
+        else
+        {
+          //writeMidiEvent(launchPad.GetPadOnNote(i, j, 0)); // turn off
         }
       }
     }
@@ -253,24 +274,22 @@ protected:
 
       if (messageType == LaunchpadMiniMk3::KEY_UP_PRESSED)
       {
-        std::cout << "keyup" << std ::endl;
-        mode = PlayClip;
-        //select_clip(1);
+        selectedClip->Transpose(1);
       }
       if (messageType == LaunchpadMiniMk3::KEY_DOWN_PRESSED)
       {
-        std::cout << "key down" << std ::endl;
-        mode = Sequence;
-        //select_clip(2);
+        selectedClip->Transpose(-1);
       }
       if (messageType == LaunchpadMiniMk3::KEY_LEFT_PRESSED)
       {
-        std::cout << "key left" << std ::endl;
-        clear_selected_clip();
+        //clear_selected_clip();
+        mode = PlayClip;
+        light_used_clips();
       }
       if (messageType == LaunchpadMiniMk3::KEY_RIGHT_PRESSED)
       {
-        std::cout << "key right" << std ::endl;
+        mode = Sequence;
+
         // todo, assign channel to clip
         //writeMidiEvent(launchPad.GetAllNoteOff());
       }
@@ -302,16 +321,15 @@ protected:
             selectedClip->SetState(x, y, 0);   // turn OFF
             midiEvent.data[2] = COLOR_PAD_OFF; // midi event velocity
           }
-
           writeMidiEvent(midiEvent);
         }
         // in this mode we select the clips
         else
         {
-          util.debug_midi_event(&midiEvent);
           selectedClip = &clip_matrix[x][y];
           light_selected_clip();
-          mode = Sequence;
+          writeMidiEvent(launchPad.GetPadOnNote(x, y, COLOR_SELECTED_PAD));
+          //mode = Sequence; // dont change mode if mode is not selected
         }
       }
     }
@@ -349,7 +367,7 @@ private:
   const uint8_t COLOR_PAD_ON = 66;
   const uint8_t COLOR_PAD_OFF = 0;
   const uint8_t COLOR_SEQ_ON = 77;
-  int seq_notes[9]{0, 60, 61, 62, 63, 64, 65, 66, 67};
+  const uint8_t COLOR_SELECTED_PAD = 88;
   int CHAN_1_NOTE_ON = 144;
   int CHAN_2_NOTE_ON = 145;
   int CHAN_7_NOTE_ON = 150;
