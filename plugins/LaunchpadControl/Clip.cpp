@@ -1,6 +1,15 @@
 #include "Clip.hpp"
 #include <iostream>
 
+int Clip::GetState()
+{
+    return state;
+}
+void Clip::SetState(int new_state)
+{
+    state = new_state;
+}
+
 int Clip::GetState(int x, int y)
 {
     return pad_state[x][y];
@@ -33,7 +42,8 @@ int Clip::GetSeqNote(int step)
 
 void Clip::Transpose(int octave)
 {
-    for (int i = 1; i <= 8; i++){
-        seq_notes_inst[i] = seq_notes_inst[i] + (12*octave); // octave = +1 -1
+    for (int i = 1; i <= 8; i++)
+    {
+        seq_notes_inst[i] = seq_notes_inst[i] + (12 * octave); // octave = +1 -1
     }
 }

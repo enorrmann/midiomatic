@@ -175,10 +175,11 @@ protected:
     {
       mode = PlayClip;
       selectedClip = metaClip;
-      light_selected_clip();
+      light_used_clips();
     }
     writeMidiEvent(launchPad.GetControlPadOnNote(1, 9, mode_color[mode]));
   }
+
   void clear_selected_clip()
   {
     writeMidiEvent(launchPad.GetSessionClearSysex());
@@ -201,9 +202,16 @@ protected:
       for (int j = 1; j <= 8; j++)
       {
 
-        if (clip_matrix[i][j].HasNoteOn())
+        if (clip_matrix[i][j].GetState() == 1)
         {
-          writeMidiEvent(launchPad.GetPadOnNote(i, j, mode_color[SelectClip]));
+          writeMidiEvent(launchPad.GetPadOnNote(i, j, mode_color[PlayClip]));
+        }
+        else
+        {
+          if (clip_matrix[i][j].HasNoteOn())
+          {
+            writeMidiEvent(launchPad.GetPadOnNote(i, j, mode_color[SelectClip]));
+          }
         }
       }
     }
@@ -219,7 +227,7 @@ protected:
       {
         if (selectedClip->GetState(i, j) == 1)
         {
-          writeMidiEvent(launchPad.GetPadOnNote(i, j, mode_color[mode]));
+          writeMidiEvent(launchPad.GetPadOnNote(i, j, mode_color[EditClip]));
         }
         else
         {
@@ -323,13 +331,12 @@ protected:
         y = note % 10;
 
         // in this mode we edit the clips
-        if (mode == EditClip || mode == PlayClip)
+        if (mode == EditClip)
         {
-
           if (selectedClip->GetState(x, y) == 0)
           {
-            selectedClip->SetState(x, y, 1);      // turn ON
-            midiEvent.data[2] = mode_color[mode]; // midi event velocity
+            selectedClip->SetState(x, y, 1);          // turn ON
+            midiEvent.data[2] = mode_color[EditClip]; // midi event velocity
           }
           else
           {
@@ -339,12 +346,32 @@ protected:
           writeMidiEvent(midiEvent);
         }
         // in this mode we select the clips
-        else
+        if (mode == SelectClip)
         {
           selectedClip = &clip_matrix[x][y];
           light_selected_clip();
           writeMidiEvent(launchPad.GetPadOnNote(x, y, mode_color[SelectClip]));
           //mode = EditClip; // dont change mode if mode is not selected
+        }
+        // in this mode we play !
+        if (mode == PlayClip)
+        {
+          selectedClip = &clip_matrix[x][y];
+          if (selectedClip->HasNoteOn() == 1)
+          {
+
+            if (selectedClip->GetState() == 0)
+            {
+              selectedClip->SetState(1);                // turn ON
+              midiEvent.data[2] = mode_color[PlayClip]; // midi event velocity
+            }
+            else
+            {
+              selectedClip->SetState(0);                  // turn OFF
+              midiEvent.data[2] = mode_color[SelectClip]; // midi event velocity
+            }
+            writeMidiEvent(midiEvent);
+          }
         }
       }
     }
