@@ -47,3 +47,20 @@ void Clip::Transpose(int octave)
         seq_notes_inst[i] = seq_notes_inst[i] + (12 * octave); // octave = +1 -1
     }
 }
+
+void Clip::SetChannel(int new_channel)
+{
+    channel = new_channel;
+}
+int Clip::GetChannel()
+{
+    return channel;
+}
+bool Clip::IsDrumClip()
+{
+    return drumClip;
+}
+void Clip::SetDrumClip(bool is_drum)
+{
+    drumClip = is_drum;
+}

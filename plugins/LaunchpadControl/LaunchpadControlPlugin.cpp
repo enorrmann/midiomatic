@@ -40,6 +40,15 @@ protected:
   // initialize
   void activate()
   {
+    for (int x = 1; x <= 8; x++)
+    {
+      for (int y = 1; y <= 8; y++)
+      {
+        Clip *theClip = &clip_matrix[x][y];
+        theClip->SetChannel(y + 1);
+        theClip->SetDrumClip(x == 1); // first row is drum clip
+      }
+    }
   }
   /**
       Get the plugin label.
@@ -131,8 +140,8 @@ protected:
         {
           continue;
         }
-        int channel = clip_channel[y];
-        int drum_clip = is_drum_clip[y];
+        int channel = theClip->GetChannel();
+        int drum_clip = theClip->IsDrumClip();
 
         // for each row in the clip
         for (int i = 1; i <= 8; i++)
@@ -373,6 +382,8 @@ protected:
             {
               selectedClip->SetState(0);                  // turn OFF
               midiEvent.data[2] = mode_color[SelectClip]; // midi event velocity
+              // send all notes off for the clip channel
+              //writeMidiEvent(launchPad.GetAllNoteOff(selectedClip->GetChannel()));
             }
             writeMidiEvent(midiEvent);
           }
@@ -405,8 +416,6 @@ private:
   double bpm;
   uint32_t wave_length;
   Clip clip_matrix[9][9]{};
-  int is_drum_clip[9] = {1, 1, 0, 0, 0, 0, 0, 0, 0}; // clip 1 is a drum clip
-  int clip_channel[9] = {0, 2, 3, 4, 5, 6, 7, 8, 9}; // pos 0 is not used
   Clip *selectedClip = &clip_matrix[1][1];
   Clip *metaClip = &clip_matrix[0][0]; // this metaclip holds the state of all the other clips, ie, active, stopped, etc
   int mode_color[3]{25, 67, 95};

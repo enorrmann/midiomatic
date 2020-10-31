@@ -11,10 +11,11 @@ private:
     int seq_notes_drum[9]{0, 60, 61, 62, 63, 64, 65, 66, 67};
     int seq_notes_inst[9]{0, 60, 62, 64, 65, 67, 69, 71, 72};
     int state = 0;
+    int channel = 0;
+    bool drumClip = false;
 
 public:
     int pad_color = 77; // default color
-    int channel = 2; // default channel
     int GetState(int x, int y);
     int GetSeqNote(int);
     void SetState(int x, int y, int state);
@@ -22,6 +23,10 @@ public:
     void Transpose(int octave);
     int GetState();
     void SetState(int state);
+    void SetChannel(int channel);
+    int  GetChannel();
+    bool IsDrumClip();
+    void SetDrumClip(bool);
 };
 
 #endif
