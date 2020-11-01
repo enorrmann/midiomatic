@@ -37,7 +37,14 @@ int Clip::HasNoteOn()
 
 int Clip::GetSeqNote(int step)
 {
-    return seq_notes_inst[step];
+    if (drumClip)
+    {
+        return seq_notes_drum[step];
+    }
+    else
+    {
+        return seq_notes_inst[step];
+    }
 }
 
 void Clip::Transpose(int octave)
@@ -45,6 +52,7 @@ void Clip::Transpose(int octave)
     for (int i = 1; i <= 8; i++)
     {
         seq_notes_inst[i] = seq_notes_inst[i] + (12 * octave); // octave = +1 -1
+        seq_notes_drum[i] = seq_notes_drum[i] + (8 * octave); // octave = +1 -1
     }
 }
 

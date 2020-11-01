@@ -46,7 +46,7 @@ protected:
       {
         Clip *theClip = &clip_matrix[x][y];
         theClip->SetChannel(y + 1);
-        theClip->SetDrumClip(x == 1); // first row is drum clip
+        theClip->SetDrumClip(y == 1); // first row is drum clip
       }
     }
   }
