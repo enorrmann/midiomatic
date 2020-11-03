@@ -10,23 +10,30 @@ void Clip::SetState(int new_state)
     state = new_state;
 }
 
-int Clip::GetState(int x, int y)
+int Clip::GetState(int step, int row)
 {
-    return pad_state[x][y];
+    return pad_state[row][step];
 }
 
-void Clip::SetState(int x, int y, int state)
+void Clip::SetState(int step, int row, int state)
 {
-    pad_state[x][y] = state;
+    /* example for me learning c++
+    int disp[rows][steps] = {
+    int disp[2][4] = {
+        {10, 11, 12, 13},
+        {14, 15, 16, 17}
+    };
+    */
+    pad_state[row][step] = state;
 }
 
 int Clip::HasNoteOn()
 {
-    for (int i = 1; i <= 8; i++)
+    for (int step = 1; step < CLIP_NUM_STEPS; step++)
     {
-        for (int j = 1; j <= 8; j++)
+        for (int row = 1; row < CLIP_NUM_ROWS; row++)
         {
-            if (pad_state[i][j] == 1)
+            if (pad_state[row][step] == 1)
             {
                 return 1;
             }
@@ -49,10 +56,10 @@ int Clip::GetSeqNote(int step)
 
 void Clip::Transpose(int octave)
 {
-    for (int i = 1; i <= 8; i++)
+    for (int row = 1; row <= CLIP_NUM_ROWS; row++)
     {
-        seq_notes_inst[i] = seq_notes_inst[i] + (12 * octave); // octave = +1 -1
-        seq_notes_drum[i] = seq_notes_drum[i] + (8 * octave); // octave = +1 -1
+        seq_notes_inst[row] = seq_notes_inst[row] + (12 * octave); // octave = +1 -1
+        seq_notes_drum[row] = seq_notes_drum[row] + (8 * octave);  // octave = +1 -1
     }
 }
 
@@ -71,4 +78,22 @@ bool Clip::IsDrumClip()
 void Clip::SetDrumClip(bool is_drum)
 {
     drumClip = is_drum;
+}
+void Clip::Clear()
+{
+    for (int step = 1; step <= CLIP_NUM_STEPS; step++)
+    {
+        for (int row = 1; row <= CLIP_NUM_ROWS; row++)
+        {
+            pad_state[row][step] = 0;
+        }
+    }
+}
+int Clip::GetNumRows()
+{
+    return CLIP_NUM_ROWS;
+}
+int Clip::GetNumSteps()
+{
+    return CLIP_NUM_STEPS;
 }

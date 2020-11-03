@@ -131,6 +131,7 @@ protected:
     int prev_step = get_prev_step(step);
 
     // for each clip in the clip matrix
+    // this is correct, these are clips and 8x8 is ok
     for (int x = 1; x <= 8; x++)
     {
       for (int y = 1; y <= 8; y++)
@@ -144,11 +145,11 @@ protected:
         int drum_clip = theClip->IsDrumClip();
 
         // for each row in the clip
-        for (int i = 1; i <= 8; i++)
+        for (int row = 1; row <= 8; row++)
         {
 
-          int cur_state = theClip->GetState(i, step);
-          int prev_state = theClip->GetState(i, prev_step);
+          int cur_state = theClip->GetState(step, row);
+          int prev_state = theClip->GetState(prev_step, row);
 
           // if the state of this step is ON
           if (cur_state == 1)
@@ -157,7 +158,7 @@ protected:
             if (prev_state == 0 || drum_clip == 1)
             {
               // send a note on event
-              writeMidiEvent(launchPad.GetNoteOn(channel, theClip->GetSeqNote(i)));
+              writeMidiEvent(launchPad.GetNoteOn(channel, theClip->GetSeqNote(row)));
             }
           }
           else
@@ -166,7 +167,7 @@ protected:
             // and the note was ON, and stop it
             if (prev_state == 1)
             {
-              writeMidiEvent(launchPad.GetNoteOff(channel, theClip->GetSeqNote(i)));
+              writeMidiEvent(launchPad.GetNoteOff(channel, theClip->GetSeqNote(row)));
             }
           }
         }
@@ -196,13 +197,7 @@ protected:
   void clear_selected_clip()
   {
     writeMidiEvent(launchPad.GetSessionClearSysex());
-    for (int i = 1; i <= 8; i++)
-    {
-      for (int j = 1; j <= 8; j++)
-      {
-        selectedClip->SetState(i, j, 0);
-      }
-    }
+    selectedClip->Clear();
   }
 
   void light_used_clips()
@@ -234,13 +229,13 @@ protected:
     // turn off all pad lights
     writeMidiEvent(launchPad.GetSessionClearSysex());
 
-    for (int i = 1; i <= 8; i++)
+    for (int step = 1; step <= 8; step++)
     {
-      for (int j = 1; j <= 8; j++)
+      for (int row = 1; row <= 8; row++)
       {
-        if (selectedClip->GetState(i, j) == 1)
+        if (selectedClip->GetState(step, row) == 1)
         {
-          writeMidiEvent(launchPad.GetPadOnNote(i, j, mode_color[EditClip]));
+          writeMidiEvent(launchPad.GetPadOnNote(step, row, mode_color[EditClip]));
         }
         else
         {
@@ -264,7 +259,8 @@ protected:
     }
 
     // this is the source of the bug
-    bpm *= 2; // fix beats 8 instead of 4
+    //bpm *= 2; // fix beats 8 instead of 4
+    bpm *= 4; // this means resolution of 16th notes, ie, one click per 16th note
     wave_length = 60 * sr / bpm;
 
     offset = pos.frame % wave_length;
@@ -340,8 +336,8 @@ protected:
         // note 12 signals pad press on x1, y2
         int note = midiEvent.data[1];
         int x, y;
-        x = note / 10 % 10;
-        y = note % 10;
+        x = note % 10;
+        y = note / 10 % 10;
 
         // in this mode we edit the clips
         if (mode == EditClip)
@@ -420,7 +416,7 @@ private:
   Clip *metaClip = &clip_matrix[0][0]; // this metaclip holds the state of all the other clips, ie, active, stopped, etc
   int mode_color[3]{25, 67, 95};
   Util util;
-  const int N_STEPS = 8;
+  const int N_STEPS = 16; // was 8
   int cur_step = 1;
   const uint8_t COLOR_PAD_ON = 66;
   const uint8_t COLOR_PAD_OFF = 0;

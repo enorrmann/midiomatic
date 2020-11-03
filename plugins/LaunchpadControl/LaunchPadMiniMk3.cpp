@@ -80,12 +80,12 @@ MidiEvent LaunchpadMiniMk3::GetAllNoteOff(int channel)
     return noteOnEvent;
 }
 
-MidiEvent LaunchpadMiniMk3::GetPadOnNote(int x, int y, int color)
+MidiEvent LaunchpadMiniMk3::GetPadOnNote(int step, int row, int color)
 {
     struct MidiEvent noteOnEvent;
     noteOnEvent.size = 3;
     noteOnEvent.data[0] = 144;        //144 is note on, channel 1
-    noteOnEvent.data[1] = x * 10 + y; // note 12 signals pad press on x1, y2
+    noteOnEvent.data[1] = row * 10 + step; // note 12 signals pad press on x1, y2
     noteOnEvent.data[2] = color;      // velo/volume
     return noteOnEvent;
 }
