@@ -29,9 +29,9 @@ void Clip::SetState(int step, int row, int state)
 
 int Clip::HasNoteOn()
 {
-    for (int step = 1; step < CLIP_NUM_STEPS; step++)
+    for (int step = 1; step <= CLIP_NUM_STEPS; step++)
     {
-        for (int row = 1; row < CLIP_NUM_ROWS; row++)
+        for (int row = 1; row <= CLIP_NUM_ROWS; row++)
         {
             if (pad_state[row][step] == 1)
             {
@@ -96,4 +96,15 @@ int Clip::GetNumRows()
 int Clip::GetNumSteps()
 {
     return CLIP_NUM_STEPS;
+}
+int Clip::GetPageState(int step, int row)
+{
+    int absoluteStep = (page - 1) * CLIP_NUM_PADS + step;
+    return pad_state[row][absoluteStep];
+}
+
+void Clip::SetPageState(int step, int row, int state)
+{
+    int absoluteStep = (page - 1) * CLIP_NUM_PADS + step;
+    pad_state[row][absoluteStep] = state;
 }

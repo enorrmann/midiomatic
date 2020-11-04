@@ -84,9 +84,9 @@ MidiEvent LaunchpadMiniMk3::GetPadOnNote(int step, int row, int color)
 {
     struct MidiEvent noteOnEvent;
     noteOnEvent.size = 3;
-    noteOnEvent.data[0] = 144;        //144 is note on, channel 1
+    noteOnEvent.data[0] = 144;             //144 is note on, channel 1
     noteOnEvent.data[1] = row * 10 + step; // note 12 signals pad press on x1, y2
-    noteOnEvent.data[2] = color;      // velo/volume
+    noteOnEvent.data[2] = color;           // velo/volume
     return noteOnEvent;
 }
 
@@ -118,29 +118,26 @@ LaunchpadMiniMk3::MessageType LaunchpadMiniMk3::GetMessageType(MidiEvent *midiEv
     // so, this means "if a controller pad has been pressed"
     if (midiEvent->data[0] == 176 && midiEvent->data[2] == 127)
     {
-        if (midiEvent->data[1] == 91)
+        switch (midiEvent->data[1])
         {
+        case 79:
+            return ARROW_2_PRESSED;
+        case 89:
+            return ARROW_1_PRESSED;
+        case 91:
             return KEY_UP_PRESSED;
-        }
-        else if (midiEvent->data[1] == 92)
-        {
+        case 92:
             return KEY_DOWN_PRESSED;
-        }
-        else if (midiEvent->data[1] == 93)
-        {
+        case 93:
             return KEY_LEFT_PRESSED;
-        }
-        else if (midiEvent->data[1] == 94)
-        {
+        case 94:
             return KEY_RIGHT_PRESSED;
-        }
-        else if (midiEvent->data[1] == 95)
-        {
+        case 95:
             return SESSION_MODE_PRESSED;
-        }
-        else if (midiEvent->data[1] == 19)
-        {
+        case 19:
             return STOP_SOLO_MUTE_TOGGLE_PRESSED;
+        default:
+            return OTHER;
         }
     }
     else if (midiEvent->data[0] == 144 && midiEvent->data[2] == 127)

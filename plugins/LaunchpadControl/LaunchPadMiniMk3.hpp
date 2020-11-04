@@ -18,6 +18,8 @@ public:
         KEY_LEFT_PRESSED,
         KEY_RIGHT_PRESSED,
         STOP_SOLO_MUTE_TOGGLE_PRESSED,
+        ARROW_1_PRESSED,
+        ARROW_2_PRESSED,
         OTHER
     };
     MidiEvent GetSessionModeOnSysex();

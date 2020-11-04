@@ -45,7 +45,7 @@ protected:
       for (int y = 1; y <= 8; y++)
       {
         Clip *theClip = &clip_matrix[x][y];
-        theClip->SetChannel(y + 1);
+        theClip->SetChannel(x + 1);
         theClip->SetDrumClip(y == 1); // first row is drum clip
       }
     }
@@ -233,7 +233,7 @@ protected:
     {
       for (int row = 1; row <= 8; row++)
       {
-        if (selectedClip->GetState(step, row) == 1)
+        if (selectedClip->GetPageState(step, row) == 1)
         {
           writeMidiEvent(launchPad.GetPadOnNote(step, row, mode_color[EditClip]));
         }
@@ -307,6 +307,16 @@ protected:
         cycleMode();
       }
 
+      if (messageType == LaunchpadMiniMk3::ARROW_1_PRESSED)
+      {
+        selectedClip->page = 1;
+        light_selected_clip();
+      }
+      if (messageType == LaunchpadMiniMk3::ARROW_2_PRESSED)
+      {
+        selectedClip->page = 2;
+        light_selected_clip();
+      }
       if (messageType == LaunchpadMiniMk3::KEY_UP_PRESSED)
       {
         selectedClip->Transpose(1);
@@ -342,15 +352,15 @@ protected:
         // in this mode we edit the clips
         if (mode == EditClip)
         {
-          if (selectedClip->GetState(x, y) == 0)
+          if (selectedClip->GetPageState(x, y) == 0)
           {
-            selectedClip->SetState(x, y, 1);          // turn ON
+            selectedClip->SetPageState(x, y, 1);      // turn ON
             midiEvent.data[2] = mode_color[EditClip]; // midi event velocity
           }
           else
           {
-            selectedClip->SetState(x, y, 0);   // turn OFF
-            midiEvent.data[2] = COLOR_PAD_OFF; // midi event velocity
+            selectedClip->SetPageState(x, y, 0); // turn OFF
+            midiEvent.data[2] = COLOR_PAD_OFF;   // midi event velocity
           }
           writeMidiEvent(midiEvent);
         }
