@@ -3,7 +3,7 @@
 
 #define CLIP_NUM_ROWS 8
 #define CLIP_NUM_PADS 8
-#define CLIP_NUM_STEPS 16
+#define CLIP_NUM_STEPS 16 // was 16 // was 32
 
 /** 
  * A clip represents the state of the 64 pads of a controller
@@ -28,12 +28,13 @@ private:
 
 public:
     int page = 1;
+    int stepLength = 1; // step lenght (in steps, weird) was 4 // was 8
     int pad_color = 77; // default color
     int GetState(int, int);
     void SetState(int, int, int state);
     int GetPageState(int, int);
     void SetPageState(int, int, int state);
-    int GetSeqNote(int);
+    int GetSeqNote(int row);
     int HasNoteOn();
     void Transpose(int octave);
     int GetState();

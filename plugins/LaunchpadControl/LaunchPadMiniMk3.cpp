@@ -13,6 +13,7 @@ MidiEvent LaunchpadMiniMk3::GetSessionModeOnSysex()
     // si no los inicializo asi, se borran las variables
     uint8_t *dataExt = (uint8_t *)malloc(sizeof(uint8_t) * 9);
     sysExEvent.size = 9;
+    sysExEvent.frame = 0;
     dataExt[0] = 240;
     dataExt[1] = 0;
     dataExt[2] = 32;
@@ -35,6 +36,7 @@ MidiEvent LaunchpadMiniMk3::GetSessionClearSysex()
     // si no los inicializo asi, se borran las variables
     uint8_t *dataExt = (uint8_t *)malloc(sizeof(uint8_t) * 11);
     sysExEvent.size = 11;
+    sysExEvent.frame = 0;
     dataExt[0] = 240;
     dataExt[1] = 0;
     dataExt[2] = 32;
@@ -54,6 +56,7 @@ MidiEvent LaunchpadMiniMk3::GetNoteOn(int channel, int note)
 {
     struct MidiEvent noteOnEvent;
     noteOnEvent.size = 3;
+    noteOnEvent.frame = 0;
     noteOnEvent.data[0] = 143 + channel; //144 is note on, channel 1
     noteOnEvent.data[1] = note;
     noteOnEvent.data[2] = 100; // velo/volume
@@ -64,6 +67,7 @@ MidiEvent LaunchpadMiniMk3::GetNoteOff(int channel, int note)
 {
     struct MidiEvent noteOnEvent;
     noteOnEvent.size = 3;
+    noteOnEvent.frame = 0;
     noteOnEvent.data[0] = 143 + channel; //144 is note on, channel 1
     noteOnEvent.data[1] = note;
     noteOnEvent.data[2] = 0; // velo/volume
@@ -74,6 +78,7 @@ MidiEvent LaunchpadMiniMk3::GetAllNoteOff(int channel)
 {
     struct MidiEvent noteOnEvent;
     noteOnEvent.size = 3;
+    noteOnEvent.frame = 0;
     noteOnEvent.data[0] = 175 + channel; //176 is control mode, channel 1
     noteOnEvent.data[1] = 123;           // 123 is all notes off
     noteOnEvent.data[2] = 0;             // velo/volume
@@ -84,6 +89,7 @@ MidiEvent LaunchpadMiniMk3::GetPadOnNote(int step, int row, int color)
 {
     struct MidiEvent noteOnEvent;
     noteOnEvent.size = 3;
+    noteOnEvent.frame = 0;
     noteOnEvent.data[0] = 144;             //144 is note on, channel 1
     noteOnEvent.data[1] = row * 10 + step; // note 12 signals pad press on x1, y2
     noteOnEvent.data[2] = color;           // velo/volume
@@ -94,6 +100,7 @@ MidiEvent LaunchpadMiniMk3::GetControlPadOnNote(int x, int y, int color)
 {
     struct MidiEvent noteOnEvent;
     noteOnEvent.size = 3;
+    noteOnEvent.frame = 0;
     noteOnEvent.data[0] = 176;        //176 for "special" pads, outside the main 8x8
     noteOnEvent.data[1] = x * 10 + y; // note 12 signals pad press on x1, y2
     noteOnEvent.data[2] = color;      // velo/volume
@@ -104,6 +111,7 @@ MidiEvent LaunchpadMiniMk3::GetTestNote()
 {
     struct MidiEvent noteEvent;
     noteEvent.size = 3;
+    noteEvent.frame = 0;
     //noteEvent.data[0] = 150; // note on chan 7
     noteEvent.data[0] = 134; // note OFF chan 7
     noteEvent.data[1] = 36;

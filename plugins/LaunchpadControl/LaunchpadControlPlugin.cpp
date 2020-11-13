@@ -46,7 +46,7 @@ protected:
       {
         Clip *theClip = &clip_matrix[x][y];
         theClip->SetChannel(x + 1);
-        theClip->SetDrumClip(y == 1); // first row is drum clip
+        theClip->SetDrumClip(x == 1); // first row is drum clip
       }
     }
   }
@@ -174,6 +174,8 @@ protected:
       }
     }
   }
+  
+  // order is Select -> Edit -> Play -> Select ...
   void cycleMode()
   {
     if (mode == SelectClip)
@@ -259,8 +261,8 @@ protected:
     }
 
     // this is the source of the bug
-    //bpm *= 2; // fix beats 8 instead of 4
-    bpm *= 4; // this means resolution of 16th notes, ie, one click per 16th note
+    bpm *= 2; // fix beats 8 instead of 4
+    //bpm *= 4; // this means resolution of 16th notes, ie, one click per 16th note
     wave_length = 60 * sr / bpm;
 
     offset = pos.frame % wave_length;
@@ -419,14 +421,14 @@ private:
   long offset = 0;
   uint32_t tone_length = 0;
   double sr = getSampleRate();
-  double bpm;
-  uint32_t wave_length;
+  double bpm= 0;
+  uint32_t wave_length= 0;
   Clip clip_matrix[9][9]{};
   Clip *selectedClip = &clip_matrix[1][1];
   Clip *metaClip = &clip_matrix[0][0]; // this metaclip holds the state of all the other clips, ie, active, stopped, etc
   int mode_color[3]{25, 67, 95};
   Util util;
-  const int N_STEPS = 16; // was 8
+  const int N_STEPS = 16; // was 8 // was 16 // was 32// was 64
   int cur_step = 1;
   const uint8_t COLOR_PAD_ON = 66;
   const uint8_t COLOR_PAD_OFF = 0;

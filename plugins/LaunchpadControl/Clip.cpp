@@ -12,7 +12,8 @@ void Clip::SetState(int new_state)
 
 int Clip::GetState(int step, int row)
 {
-    return pad_state[row][step];
+    int v_step = (step + stepLength - 1) / stepLength;
+    return pad_state[row][v_step]; // was step
 }
 
 void Clip::SetState(int step, int row, int state)
@@ -42,15 +43,16 @@ int Clip::HasNoteOn()
     return 0;
 }
 
-int Clip::GetSeqNote(int step)
+int Clip::GetSeqNote(int row)
 {
+
     if (drumClip)
     {
-        return seq_notes_drum[step];
+        return seq_notes_drum[row];
     }
     else
     {
-        return seq_notes_inst[step];
+        return seq_notes_inst[row];
     }
 }
 
@@ -97,6 +99,8 @@ int Clip::GetNumSteps()
 {
     return CLIP_NUM_STEPS;
 }
+
+// estos se usan para setear las luces
 int Clip::GetPageState(int step, int row)
 {
     int absoluteStep = (page - 1) * CLIP_NUM_PADS + step;
